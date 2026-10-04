@@ -13,7 +13,8 @@ services:
         value: "20"
       - key: NODE_ENV
         value: production
-    # Uncomment to enable the multiplayer relay (the server enables it
-    # automatically whenever the optional `ws` package is installed):
-    #   - key: NO_MULTIPLAYER
-    #     value: "0"
+      # The relay switches on automatically whenever the optional `ws` package
+      # is present, so it is pinned off for the single-player build. Set this
+      # to "0" to bring the multiplayer relay up.
+      - key: NO_MULTIPLAYER
+        value: "1"
