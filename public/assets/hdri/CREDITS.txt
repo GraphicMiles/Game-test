@@ -1,0 +1,4 @@
+HDRI skies
+  sweetwater_day.hdr  - "Kiara 7 Late Afternoon" (2K HDR) - Poly Haven - CC0 1.0
+  sweetwater_dusk.hdr - "Kiara 9 Dusk" (1K HDR)           - Poly Haven - CC0 1.0
+  https://polyhaven.com   https://creativecommons.org/publicdomain/zero/1.0/

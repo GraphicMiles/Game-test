@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: sweetwater
+    runtime: node
+    plan: free
+    region: oregon            # change to frankfurt for Europe, singapore for Asia
+    branch: main
+    buildCommand: npm install --omit=dev
+    startCommand: node server.js
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: NODE_ENV
+        value: production
+    # Uncomment to enable the multiplayer relay (the server enables it
+    # automatically whenever the optional `ws` package is installed):
+    #   - key: NO_MULTIPLAYER
+    #     value: "0"

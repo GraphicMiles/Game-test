@@ -1,0 +1,100 @@
+{
+ "wood_siding": {
+  "source": "Planks037A",
+  "license": "CC0 1.0 (ambientCG)",
+  "maps": {
+   "color": "wood_siding_color.jpg",
+   "normal": "wood_siding_normal.jpg",
+   "ao": "wood_siding_ao.jpg"
+  },
+  "bytes": 193943
+ },
+ "wood_painted": {
+  "source": "PaintedWood009C",
+  "license": "CC0 1.0 (ambientCG)",
+  "maps": {
+   "color": "wood_painted_color.jpg",
+   "normal": "wood_painted_normal.jpg",
+   "ao": "wood_painted_ao.jpg"
+  },
+  "bytes": 289006
+ },
+ "wood_deck": {
+  "source": "WoodFloor064",
+  "license": "CC0 1.0 (ambientCG)",
+  "maps": {
+   "color": "wood_deck_color.jpg",
+   "normal": "wood_deck_normal.jpg"
+  },
+  "bytes": 99309
+ },
+ "ground_dirt": {
+  "source": "Ground110",
+  "license": "CC0 1.0 (ambientCG)",
+  "maps": {
+   "color": "ground_dirt_color.jpg",
+   "normal": "ground_dirt_normal.jpg",
+   "ao": "ground_dirt_ao.jpg"
+  },
+  "bytes": 609138
+ },
+ "ground_sand": {
+  "source": "Ground093A",
+  "license": "CC0 1.0 (ambientCG)",
+  "maps": {
+   "color": "ground_sand_color.jpg",
+   "normal": "ground_sand_normal.jpg",
+   "ao": "ground_sand_ao.jpg"
+  },
+  "bytes": 137219
+ },
+ "ground_scrub": {
+  "source": "Ground102",
+  "license": "CC0 1.0 (ambientCG)",
+  "maps": {
+   "color": "ground_scrub_color.jpg",
+   "normal": "ground_scrub_normal.jpg",
+   "ao": "ground_scrub_ao.jpg"
+  },
+  "bytes": 327697
+ },
+ "rock_mesa": {
+  "source": "Rock030",
+  "license": "CC0 1.0 (ambientCG)",
+  "maps": {
+   "color": "rock_mesa_color.jpg",
+   "normal": "rock_mesa_normal.jpg",
+   "ao": "rock_mesa_ao.jpg"
+  },
+  "bytes": 614645
+ },
+ "roof_metal": {
+  "source": "MetalPlates013",
+  "license": "CC0 1.0 (ambientCG)",
+  "maps": {
+   "color": "roof_metal_color.jpg",
+   "normal": "roof_metal_normal.jpg",
+   "ao": "roof_metal_ao.jpg"
+  },
+  "bytes": 203636
+ },
+ "brick": {
+  "source": "Bricks097",
+  "license": "CC0 1.0 (ambientCG)",
+  "maps": {
+   "color": "brick_color.jpg",
+   "normal": "brick_normal.jpg",
+   "ao": "brick_ao.jpg"
+  },
+  "bytes": 232277
+ },
+ "plaster": {
+  "source": "Plaster001",
+  "license": "CC0 1.0 (ambientCG)",
+  "maps": {
+   "color": "plaster_color.jpg",
+   "normal": "plaster_normal.jpg"
+  },
+  "bytes": 280397
+ }
+}
