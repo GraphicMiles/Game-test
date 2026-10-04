@@ -61,6 +61,27 @@ test('ground-floor batwing entrance is open and the player can enter the furnish
   assert.ok(walker.pos.x < -18.5, `expected to enter the room, stopped at x=${walker.pos.x.toFixed(2)}`);
 });
 
+test('upper-storey glazing blocks a crouch-jump through the window', () => {
+  const { world } = buildMariposa({ withFurnishings: false });
+  // Local upper window x=2.9 maps to world z=9.1. At y=4.2 a crouched
+  // player fits between the sill and lintel, so the glass itself must collide.
+  const pane = playerAt(world, -12.6, 4.2, 9.1);
+  pane.crouching = true;
+  assert.equal(pane._blocked(pane.pos.x, pane.pos.y, pane.pos.z, pane.radius, pane.bodyHeight), true,
+    'the window aperture should remain solid even when a player crouches above the sill');
+});
+
+test('player movement cannot crouch-jump through the gallery window', () => {
+  const { world } = buildMariposa({ withFurnishings: false });
+  const player = playerAt(world, -11.9, 3.48, 9.1);
+  player.onGround = true;
+  for (let i = 0; i < 45; i++) {
+    player.update(1 / 60, { strafe: -1, crouch: true, jump: i === 0 });
+  }
+  assert.ok(player.pos.x > -12.25,
+    `the player should remain on the gallery side of the window, x=${player.pos.x.toFixed(2)}`);
+});
+
 test('solid side wall blocks passage while the shell preserves a closed rear wall', () => {
   const { world } = buildMariposa({ withFurnishings: false });
   const player = playerAt(world, -20.1, 0.5, 2.5); // local x=+9.5, away from a window

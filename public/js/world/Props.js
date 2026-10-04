@@ -286,8 +286,20 @@ export function bar(B, A, ctx, x, z, o = {}) {
   for (let i = 0; i < 3; i++) {
     B.box({ w: len - 0.3, h: 0.07, d: 0.30, y: 1.15 + i * 0.62, z: -1.92, mat: wood, uv: 1.4, tint: 0x6f5836, collide: false });
   }
-  const glassM = A.glass(0xc9d6d8, 0.30);
-  B.box({ w: len * 0.7, h: 1.0, d: 0.06, y: 1.75, z: -1.86, mat: glassM, uv: 1, collide: false });
+  // Smoky bronze mirror panes between the bottle shelves. A single pale
+  // translucent sheet reads as a blank white panel under daytime lighting;
+  // split panes and brass stiles make the back-bar feel like fitted furniture.
+  const mirror = ctx.M.barMirror || (ctx.M.barMirror = new THREE.MeshStandardMaterial({
+    color: 0x514237, roughness: 0.22, metalness: 0.35, envMapIntensity: 1.1,
+    side: THREE.DoubleSide,
+  }));
+  const mirrorFrame = ctx.M.barMirrorFrame || (ctx.M.barMirrorFrame = A.plain(0x8b6736, { rough: 0.34, metal: 0.62 }));
+  for (const y of [1.46, 2.08]) {
+    B.box({ w: len * 0.70, h: 0.52, d: 0.045, y, z: -1.87, mat: mirror, uv: 1, collide: false });
+  }
+  for (const x of [-len * 0.35, 0, len * 0.35]) {
+    B.box({ w: 0.055, h: 1.14, d: 0.06, x, y: 1.77, z: -1.82, mat: mirrorFrame, uv: 1.8, collide: false });
+  }
   B.collideBox({ x: 0, y: 0.6, z: 0, w: len, h: 1.2, d: 0.8 });
   B.collideBox({ x: 0, y: 1.25, z: -2.1, w: len, h: 2.5, d: 0.4 });
   B.restore();

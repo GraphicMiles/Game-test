@@ -57,42 +57,52 @@ export function windowUnit(B, A, ctx, o) {
   const { x, z, axis, w, h, y } = o;
   const trim = ctx.M.trim || (ctx.M.trim = A.mat('wood_siding', { vertexColors: true, rough: 0.78 }));
   const sillM = ctx.M.sill || (ctx.M.sill = A.mat('wood_siding', { vertexColors: true, rough: 0.8 }));
-  const glassM = ctx.M.windowGlass || (ctx.M.windowGlass = A.glass(0xa9bfc6, 0.20));
+  const glassM = ctx.M.windowGlass || (ctx.M.windowGlass = A.glass(0xa9bfc6, 0.28));
   const litM = ctx.M.windowLit || (ctx.M.windowLit = new THREE.MeshStandardMaterial({
     color: 0x2a2118, emissive: new THREE.Color(0xffb562), emissiveIntensity: 0,
     roughness: 0.92, side: THREE.DoubleSide,
   }));
   if (ctx.night && !ctx.night.find((n) => n.mat === litM)) ctx.night.push({ mat: litM, max: 1.5 });
 
-  const along = axis === 'x';            // wall runs along X  ->  pane faces Z
+  const along = axis === 'x';            // wall runs along X -> pane faces Z
   const cx = x, cz = z;
   const pw = along ? w : 0.03;           // pane footprint
   const pd = along ? 0.03 : w;
   const fw = along ? w + 0.22 : 0.13;    // casing footprint
   const fd = along ? 0.13 : w + 0.22;
+  const faceX = along ? cx : cx + 0.13;
+  const faceZ = along ? cz + 0.13 : cz;
+  const trimX = along ? cx : faceX + 0.055;
+  const trimZ = along ? faceZ + 0.055 : cz;
 
-  // casing
-  B.box({ w: fw, h: h + 0.20, d: fd, x: cx, y: y + h / 2, z: cz, mat: trim, uv: 1.4, tint: o.tint || 0x8b7350, collide: false });
-  // sill
+  // Move the casing, projecting sill, glazing and muntins outside the shell
+  // face, so the window reads as fitted joinery rather than a dark wall hole.
+  B.box({ w: fw, h: h + 0.20, d: fd, x: faceX, y: y + h / 2, z: faceZ,
+    mat: trim, uv: 1.4, tint: o.tint || 0x8b7350, collide: false });
   B.box({ w: along ? w + 0.44 : 0.34, h: 0.09, d: along ? 0.34 : w + 0.44,
-    x: cx, y: y - 0.05, z: cz, mat: sillM, uv: 1.6, tint: 0x7d6440, collide: false });
-  // lintel
+    x: faceX, y: y - 0.05, z: faceZ, mat: sillM, uv: 1.6, tint: 0x7d6440, collide: false });
   B.box({ w: along ? w + 0.30 : 0.26, h: 0.08, d: along ? 0.26 : w + 0.30,
-    x: cx, y: y + h + 0.06, z: cz, mat: sillM, uv: 1.6, tint: 0x7d6440, collide: false });
-  // glass + night-lit interior pane (offset inward)
+    x: faceX, y: y + h + 0.06, z: faceZ, mat: sillM, uv: 1.6, tint: 0x7d6440, collide: false });
+
+  // Cool, lightly reflective outer pane and a warm interior pane for night.
   const inward = along ? -0.055 : (cx > 0 ? -0.055 : 0.055);
-  B.box({ w: pw, h, d: pd, x: cx, y: y + h / 2, z: cz, mat: glassM, uv: 1, collide: false });
+  B.box({ w: pw, h, d: pd, x: faceX, y: y + h / 2, z: faceZ, mat: glassM, uv: 1, collide: false });
+  // Wall apertures are intentional, but glazing still blocks a player. Match
+  // the shell thickness so even a crouch-jump cannot slip through the pane.
+  B.collideBox({ w: along ? w : 0.20, h, d: along ? 0.20 : w,
+    x: cx, y: y + h / 2, z: cz }, 'window');
   B.box({ w: pw, h: h * 0.94, d: pd,
-    x: along ? cx : cx + inward, y: y + h / 2, z: along ? cz + inward : cz,
+    x: along ? cx : faceX + inward, y: y + h / 2, z: along ? faceZ + inward : cz,
     mat: litM, uv: 1, collide: false });
-  // mullions (cross)
+
+  // Project the crossed muntins slightly ahead of the pane, with a separate
+  // lower sash rail for a readable double-hung silhouette at gameplay scale.
   B.box({ w: along ? w + 0.2 : 0.055, h: 0.06, d: along ? 0.055 : w + 0.2,
-    x: cx, y: y + h / 2, z: cz, mat: trim, uv: 2, tint: 0x6f5836, collide: false });
-  B.box({ w: along ? 0.055 : w + 0.2, h: h, d: along ? w + 0.2 : 0.055,
-    x: cx, y: y + h / 2, z: cz, mat: trim, uv: 2, tint: 0x6f5836, collide: false });
-  // lower sash rail
+    x: trimX, y: y + h / 2, z: trimZ, mat: trim, uv: 2, tint: 0x6f5836, collide: false });
+  B.box({ w: along ? 0.055 : w + 0.2, h, d: along ? w + 0.2 : 0.055,
+    x: trimX, y: y + h / 2, z: trimZ, mat: trim, uv: 2, tint: 0x6f5836, collide: false });
   B.box({ w: along ? w : 0.05, h: 0.05, d: along ? 0.05 : w,
-    x: cx, y: y + h * 0.34, z: cz, mat: trim, uv: 2, tint: 0x6f5836, collide: false });
+    x: trimX, y: y + h * 0.34, z: trimZ, mat: trim, uv: 2, tint: 0x6f5836, collide: false });
 }
 
 /* ------------------------------------------------------------------- doors */
@@ -628,11 +638,11 @@ export function makeBuilding(B, A, ctx, cfg) {
       day: 0.75, distance: big * 2.8, decay: 1.30, castShadow: false,
     });
     const groundY = upper ? Math.min(wallH - 1.4, upper.y - 1.0) : wallH - 0.8;
-    const gMax = saloon ? 48 : 44;
+    const gMax = saloon ? 26 : 44;
     // rooms longer than 14 m get a second lamp so no corner goes black
     if (big > 14) { lamp(-big * 0.22, groundY, gMax * 0.8); lamp(big * 0.22, groundY, gMax * 0.8); }
     else lamp(0, groundY, gMax);
-    if (upper) lamp(0, (upper.y + wallH) / 2 + 0.3, 40);
+    if (upper) lamp(0, (upper.y + wallH) / 2 + 0.3, saloon ? 24 : 40);
   }
 
   /* ---------------------------------------------------- label trigger */
