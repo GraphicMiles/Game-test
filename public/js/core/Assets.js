@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { GLTFLoader } from '../../vendor/three/examples/jsm/loaders/GLTFLoader.js';
+import { DRACOLoader } from '../../vendor/three/examples/jsm/loaders/DRACOLoader.js';
 import { RGBELoader } from '../../vendor/three/examples/jsm/loaders/RGBELoader.js';
 
 const TEX_DIR = './assets/textures/';
@@ -23,6 +24,9 @@ export class Assets {
     this.renderer = renderer;
     this.loader = new THREE.TextureLoader();
     this.gltf = new GLTFLoader();
+    this.draco = new DRACOLoader();
+    this.draco.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+    this.gltf.setDRACOLoader(this.draco);
     this.rgbe = new RGBELoader();
     this.textures = {};
     this.materials = {};
