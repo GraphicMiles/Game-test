@@ -44,12 +44,49 @@ export function makeMariposa(B, A, ctx, cfg) {
   // The shared box-sign UVs are world-scaled; use a Mariposa-specific flat
   // sign below so its lettering remains legible on the wide false front.
   makeBuilding(B, A, ctx, { ...buildCfg, sign: null });
+  addMariposaShowbill(B, A, ctx, buildCfg);
   B.save();
   B.translate(buildCfg.x || 0, 0, buildCfg.z || 0);
   B.rotateY(buildCfg.rot || 0);
   addMariposaFacade(B, A, ctx, buildCfg);
   B.restore();
   return buildCfg;
+}
+
+function addMariposaShowbill(B, A, ctx, cfg) {
+  if (!cfg.showbill || typeof A.poster !== 'function') return;
+  const M = ctx.M;
+  const trim = M.trim || (M.trim = A.mat('wood_siding', { vertexColors: true, rough: 0.78 }));
+  let poster = M.mariposaShowbill;
+  if (!poster) {
+    const texture = A.poster('showbill');
+    poster = new THREE.MeshStandardMaterial({
+      map: texture, roughness: 0.94, metalness: 0, side: THREE.DoubleSide,
+    });
+    M.mariposaShowbill = poster;
+    ctx.signs = ctx.signs || [];
+    ctx.signs.push(poster);
+  }
+
+  const w = cfg.w || 19;
+  const x = cfg.x || 0;
+  const z = cfg.z || 0;
+  const rot = cfg.rot || 0;
+  B.save();
+  B.translate(x, 0, z);
+  B.rotateY(rot);
+
+  // Hang the paper on the west interior wall, in the clear bay between two
+  // side windows. Its normal faces across the saloon rather than through the
+  // exterior wall, and it remains a visual-only detail.
+  const posterX = -w / 2 + 0.17;
+  const posterZ = 4.0;
+  const posterY = 2.23;
+  B.box({ w: 0.07, h: 1.48, d: 1.02, x: posterX - 0.035, y: posterY, z: posterZ,
+    mat: trim, uv: 1.5, tint: 0x694c32, collide: false });
+  B.quad({ w: 0.88, h: 1.30, x: posterX, y: posterY, z: posterZ,
+    ry: Math.PI / 2, uvScale: [1, 1], mat: poster, collide: false });
+  B.restore();
 }
 
 function addMariposaFacade(B, A, ctx, cfg) {
@@ -100,14 +137,18 @@ function addMariposaSign(B, A, ctx, o) {
   const y = sign.y !== undefined ? sign.y : 7.9;
   const z = hd + 0.18;
   const wood = ctx.M.mariposaSignWood || (ctx.M.mariposaSignWood = A.mat('wood_siding', { vertexColors: true, rough: 0.78 }));
-  const texture = A.sign(sign.text || 'MARIPOSA', {
-    w: sign.w || 1024, h: sign.h || 224, sub: sign.sub || 'SALOON',
-    bg: sign.bg || '#3a1f14', fg: sign.fg || '#f0dcae',
-    accent: sign.accent || '#d8a13c', style: sign.style || 'board', font: sign.font,
-  });
-  const face = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.86, metalness: 0, side: THREE.DoubleSide });
-  ctx.signs = ctx.signs || [];
-  ctx.signs.push(face);
+  let face = ctx.M.mariposaSignFace;
+  if (!face) {
+    const texture = A.sign(sign.text || 'MARIPOSA', {
+      w: sign.w || 1024, h: sign.h || 224, sub: sign.sub || 'SALOON',
+      bg: sign.bg || '#3a1f14', fg: sign.fg || '#f0dcae',
+      accent: sign.accent || '#d8a13c', style: sign.style || 'board', font: sign.font,
+    });
+    face = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.86, metalness: 0, side: THREE.DoubleSide });
+    ctx.M.mariposaSignFace = face;
+    ctx.signs = ctx.signs || [];
+    ctx.signs.push(face);
+  }
 
   // A thin, framed fascia with an unscaled 0..1 label UV keeps the title crisp;
   // the shared kit's world-scaled box UVs are better for wood than typography.

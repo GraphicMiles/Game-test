@@ -175,6 +175,7 @@ function applySetting(key, value) {
   switch (key) {
     case 'quality':
       engine.applyQuality(value);
+      town?.setQuality(engine.q);
       if (sky) {
         const sz = QUALITY[value].shadow;
         if (sky.sun.shadow.mapSize.width !== sz) {

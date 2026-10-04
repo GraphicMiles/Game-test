@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { MeshBuilder } from './Builder.js';
 import { makeBuilding, cornice } from './Buildings.js';
-import { makeMariposa, MARIPOSA_CONFIG } from './Mariposa.js';
+import { MARIPOSA_CONFIG } from './Mariposa.js';
+import { buildMariposaLOD } from './MariposaLOD.js';
 import { furnish } from './Furnish.js';
 import * as P from './Props.js';
 import { Terrain, heightAt } from './Terrain.js';
@@ -84,9 +85,14 @@ export class Sweetwater {
 
     /* ===================================================== merge */
     const out = B.build(this.group, { shadows: true });
-    this.colliders = out.colliders;
-    this.slopes = out.slopes;
-    this.stats = out;
+    this.colliders = [...out.colliders, ...(this.mariposaLOD?.colliders || [])];
+    this.slopes = [...out.slopes, ...(this.mariposaLOD?.slopes || [])];
+    this.stats = {
+      ...out,
+      colliders: this.colliders,
+      slopes: this.slopes,
+      mariposa: this.mariposaLOD?.stats || null,
+    };
 
     /* ===================================================== runtime extras */
     this.buildLights();
@@ -96,6 +102,11 @@ export class Sweetwater {
     this.nightMats = ctx.night;
     this.places = ctx.places;
     this.animated = ctx.animated;
+  }
+
+  setQuality(quality) {
+    this.q = quality;
+    return this.mariposaLOD?.setQuality(quality);
   }
 
   /* ------------------------------------------------------------- mesas */
@@ -214,8 +225,11 @@ export class Sweetwater {
         ...b, x: W(b.d), rot: HALF_PI, siding: 'wood_painted',
         porch: b.porch || porchDef(b.w),
       };
-      if (b.name === 'The Mariposa Saloon') makeMariposa(B, A, ctx, cfg);
-      else makeBuilding(B, A, ctx, cfg);
+      if (b.name === 'The Mariposa Saloon') {
+        // Keep the saloon independent so its geometry can switch detail by
+        // distance while its high-detail collision remains always available.
+        this.mariposaLOD = buildMariposaLOD(this.group, B, A, ctx, cfg, this.q);
+      } else makeBuilding(B, A, ctx, cfg);
     }
 
     /* ------------------------------------------------- EAST ROW (faces -X) */

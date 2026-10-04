@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { MeshBuilder } from '../public/js/world/Builder.js';
 import { makeMariposa, MARIPOSA_CONFIG } from '../public/js/world/Mariposa.js';
+import { buildMariposaLOD, MARIPOSA_LOD_DISTANCES } from '../public/js/world/MariposaLOD.js';
 import { furnish } from '../public/js/world/Furnish.js';
 import { CollisionWorld, Player } from '../public/js/player/Player.js';
 
@@ -26,6 +27,7 @@ function makeAssets() {
     plain: (color, options = {}) => new THREE.MeshStandardMaterial({ color, ...materialOptions(options) }),
     glass: (color, opacity = 0.2) => new THREE.MeshStandardMaterial({ color, transparent: true, opacity }),
     sign: () => new THREE.Texture(),
+    poster: () => new THREE.Texture(),
   };
 }
 
@@ -134,4 +136,65 @@ test('interior staircase publishes a continuous, ascending collision ramp', () =
   player.vel.set(ramp.ux * 1.5, 0, ramp.uz * 1.5);
   for (let i = 0; i < 150; i++) player._step(1 / 60);
   assert.ok(player.pos.y > 3.0, `player should climb to the upper floor, ended at y=${player.pos.y.toFixed(2)}`);
+});
+
+test('configured Mariposa showbill is generated and attached as an interior detail', () => {
+  const B = new MeshBuilder('mariposa-showbill-test');
+  const A = makeAssets();
+  const texture = new THREE.Texture();
+  let requestedPoster = null;
+  A.poster = (kind) => { requestedPoster = kind; return texture; };
+  const ctx = { M: {}, night: [], lights: [], animated: [], signs: [], places: [] };
+
+  makeMariposa(B, A, ctx, structuredClone(mariposaConfig));
+
+  assert.equal(requestedPoster, 'showbill');
+  assert.equal(ctx.M.mariposaShowbill.map, texture);
+  assert.ok(B.groups.has(ctx.M.mariposaShowbill), 'poster geometry should be part of the Mariposa builder');
+});
+
+test('Mariposa has independent, quality-biased high/medium/low distance LODs', () => {
+  const parent = new THREE.Group();
+  const worldBuilder = new MeshBuilder('town-before-mariposa');
+  worldBuilder.collideBox({ x: mariposaConfig.x, y: 1, z: mariposaConfig.z, w: 4, h: 2, d: 4 });
+  const A = makeAssets();
+  const ctx = { M: {}, night: [], lights: [], animated: [], signs: [], places: [] };
+
+  const result = buildMariposaLOD(parent, worldBuilder, A, ctx, structuredClone(mariposaConfig), { lodBias: 1 });
+  const { lod, stats } = result;
+
+  assert.equal(lod.parent, parent);
+  assert.equal(lod.name, 'MariposaSaloonLOD');
+  assert.deepEqual(lod.levels.map((level) => level.distance), [0, MARIPOSA_LOD_DISTANCES.medium, MARIPOSA_LOD_DISTANCES.low]);
+  assert.ok(result.colliders.length > 0, 'high-detail collision must remain available at every render LOD');
+  assert.ok(result.slopes.length > 0, 'the saloon stairs must remain walkable independent of visual LOD');
+  assert.equal(worldBuilder.colliders.length, 0, 'the saloon footprint should still clear overlapping town colliders');
+  assert.ok(stats.low.tris < stats.medium.tris && stats.medium.tris < stats.high.tris,
+    'each farther level should use a simpler silhouette');
+
+  const camera = new THREE.PerspectiveCamera();
+  const selectLevel = (x) => {
+    camera.position.set(x, 0, mariposaConfig.z);
+    camera.updateMatrixWorld(true);
+    lod.update(camera);
+  };
+  lod.updateMatrixWorld(true);
+  selectLevel(mariposaConfig.x);
+  assert.deepEqual(lod.levels.map((level) => level.object.visible), [true, false, false]);
+
+  selectLevel(mariposaConfig.x + 60);
+  assert.deepEqual(lod.levels.map((level) => level.object.visible), [false, true, false]);
+
+  selectLevel(mariposaConfig.x + 120);
+  assert.deepEqual(lod.levels.map((level) => level.object.visible), [false, false, true]);
+
+  const lowQuality = result.setQuality({ lodBias: 1.9 });
+  assert.ok(lowQuality.medium < MARIPOSA_LOD_DISTANCES.medium);
+  selectLevel(mariposaConfig.x + 60);
+  assert.deepEqual(lod.levels.map((level) => level.object.visible), [false, false, true]);
+
+  const ultraQuality = result.setQuality({ lodBias: 0.75 });
+  assert.ok(ultraQuality.medium > MARIPOSA_LOD_DISTANCES.medium);
+  selectLevel(mariposaConfig.x + 60);
+  assert.deepEqual(lod.levels.map((level) => level.object.visible), [false, true, false]);
 });
