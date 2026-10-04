@@ -16,6 +16,14 @@ const CLOTH = {
   bartender: { shirt: 0xe4dcc4, skirt: 0x3a3228, trim: 0x6a5a3a },
   worker: { shirt: 0xa89a80, skirt: 0x4a3f2c, trim: 0x7a6a4a },
   black: { shirt: 0x2a2622, skirt: 0x14120f, trim: 0x8a7442 },
+
+  // Scouted character archetypes from sweetwater-human-model-scout.html
+  westernCowboy: { shirt: 0xd0c4ae, skirt: 0x382d22, trim: 0x6f4c2c, hat: 0x4a3828 }, // Ref 01
+  cowboyGirl: { shirt: 0xc87050, skirt: 0x384c60, trim: 0x7a4d2c, hat: 0x5a3e2a },    // Ref 02
+  cowboyLady: { shirt: 0x40322c, skirt: 0x684e3a, trim: 0x8c6442, hat: 0x32241b },    // Ref 03
+  cowboyElderly: { shirt: 0xb4a896, skirt: 0x443d34, trim: 0x584c3c, hat: 0x786a58, skin: 0xb48260 }, // Ref 04
+  wildWestOutlaw: { shirt: 0x8c2c28, skirt: 0x262220, trim: 0x4c3c2e, hat: 0x221d1a }, // Ref 05 / 07
+  frontierSeries: { shirt: 0x8fa286, skirt: 0x443a28, trim: 0xbca472, hat: 0x544634 }, // Ref 06
 };
 
 function box(w, h, d, x, y, z, ry = 0, rz = 0) {
@@ -42,7 +50,7 @@ function merged(parts) { return mergeGeometries(parts, false); }
 /** Build one host figure. Returns { root, parts } with animatable limbs. */
 function makeFigure(A, opts = {}) {
   const look = CLOTH[opts.look || 'guest'] || CLOTH.guest;
-  const skin = new THREE.Color(SKIN[(Math.random() * SKIN.length) | 0]);
+  const skin = look.skin ? new THREE.Color(look.skin) : new THREE.Color(SKIN[(Math.random() * SKIN.length) | 0]);
   const female = !!opts.female;
   const scale = opts.scale || 1;
 
@@ -51,7 +59,7 @@ function makeFigure(A, opts = {}) {
   const mSkirt = A.plain(look.skirt, { rough: 0.88 });
   const mTrim = A.plain(look.trim, { rough: 0.7 });
   const mDark = A.plain(0x2a211a, { rough: 0.8 });
-  const mHat = A.plain(opts.hatColor || 0x6a5334, { rough: 0.9 });
+  const mHat = A.plain(opts.hatColor || look.hat || 0x6a5334, { rough: 0.9 });
 
   const root = new THREE.Group();
   const H = 1.76 * scale;
@@ -344,6 +352,38 @@ export class Hosts {
     this.add({
       look: 'worker', pause: 8, speed: 0.85,
       path: [[-28, 74], [-28, 66], [-24, 64]],
+    });
+
+    /* ------------------------------------------- scouted cast archetypes */
+    // Ref 01: Western Cowboy (Rigged) on the boardwalk by the livery
+    this.add({
+      look: 'westernCowboy', gun: true, speed: 1.05, pause: 3.5,
+      path: [[-10.8, -2], [-10.8, 12], [-6.5, 14], [-6.5, 0]],
+    });
+    // Ref 02: Cowboy Girl 1 walking near the station plaza
+    this.add({
+      look: 'cowboyGirl', female: true, speed: 1.1, pause: 3,
+      path: [[5.0, 62], [5.0, 46], [-2.0, 44], [-2.0, 60]],
+    });
+    // Ref 03: Cowboy Lady on the Mariposa upper balcony
+    this.add({
+      look: 'cowboyLady', female: true, pause: 8, speed: 0.75, y: 4.88,
+      path: [[-11.8, 8.5], [-11.8, 15.5]],
+    });
+    // Ref 04: Cowboy Elderly resting on the hotel porch bench
+    this.add({
+      look: 'cowboyElderly', gun: true, pause: 999,
+      path: [[11.4, 38]], idle: 'idle', lookAt: true,
+    });
+    // Ref 05 & 07: Wild West Outlaw lurking at the livery alley
+    this.add({
+      look: 'wildWestOutlaw', gun: true, pause: 6, speed: 0.9,
+      path: [[-12.0, -32], [-6.0, -32], [-6.0, -42], [-12.0, -42]],
+    });
+    // Ref 06: Western Characters Series 2025 patrolling south boardwalk
+    this.add({
+      look: 'frontierSeries', gun: true, speed: 1.15, pause: 4,
+      path: [[10.8, -48], [10.8, -62], [4.5, -60], [4.5, -48]],
     });
 
     /* ---------------------------------------------------- interior hosts */
