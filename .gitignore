@@ -5,7 +5,9 @@ Thumbs.db
 .env
 .env.local
 *.log
-dist/
-build/
+/dist/
+/build/
 .vscode/
 .idea/
+
+# NOTE: never ignore nested build/ or dist/ dirs — public/vendor/three lives in one.
