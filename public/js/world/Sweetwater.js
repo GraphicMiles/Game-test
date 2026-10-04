@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { MeshBuilder } from './Builder.js';
 import { makeBuilding, cornice } from './Buildings.js';
+import { makeMariposa, MARIPOSA_CONFIG } from './Mariposa.js';
 import { furnish } from './Furnish.js';
 import * as P from './Props.js';
 import { Terrain, heightAt } from './Terrain.js';
@@ -198,12 +199,7 @@ export class Sweetwater {
         facade: 0x8a7358, interior: 'livery', sign: { text: 'LIVERY', sub: '& BOARD', bg: '#2f2115' }, parapet: 1.6, roof: 'gable', chimney: true },
       { z: 29, w: 10, d: 10, h: 4.0, name: 'G. Benz Harness', sub: 'Saddlery · Leather Goods',
         facade: 0xa89070, interior: 'tailor', sign: { text: 'G. BENZ', sub: 'HARNESS', bg: '#2a1c11' }, parapet: 1.3, roof: 'shed' },
-      { z: 12, w: 19, d: 15, h: 7.2, name: 'The Mariposa Saloon', sub: 'Faro · Poker · Rye',
-        facade: 0xb08356, interior: 'saloon', roof: 'gable', parapet: 2.7, chimney: { x: 6.5, z: -5 },
-        upper: { y: 3.4, windows: 5, stairX: -6.4, stairZ: -4.2 },
-        sign: { text: 'MARIPOSA', sub: 'SALOON', bg: '#3a1f14', fg: '#f0dcae', accent: '#d8a13c', width: 11.5, ratio: 0.20, y: 7.9 },
-        door: { batwing: true, w: 1.7, h: 2.4 }, porch: { w: 18.8, depth: 3.6, posts: 7, rail: true, stepW: 3.0 },
-        windows: 3, winW: 1.2, winH: 1.9, winY: 1.35, showbill: true },
+      MARIPOSA_CONFIG,
       { z: -16, w: 13, d: 12, h: 4.6, name: 'H. Sharp General Store', sub: 'Dry Goods · Provisions',
         facade: 0xa8a08a, interior: 'general', sign: { text: 'H. SHARP', sub: 'GENERAL STORE', bg: '#2d3a2a' }, parapet: 1.6, roof: 'gable', chimney: true },
       { z: -33, w: 11, d: 11, h: 4.8, name: 'The Sweetwater Gazette', sub: 'News · Printing · Notices',
@@ -214,10 +210,12 @@ export class Sweetwater {
         facade: 0xb5ab93, interior: 'clinic', sign: { text: "DR. O'ROURKE", sub: 'PHYSICIAN', bg: '#2b2a24' }, parapet: 1.3, roof: 'shed' },
     ];
     for (const b of west) {
-      makeBuilding(B, A, ctx, {
+      const cfg = {
         ...b, x: W(b.d), rot: HALF_PI, siding: 'wood_painted',
         porch: b.porch || porchDef(b.w),
-      });
+      };
+      if (b.name === 'The Mariposa Saloon') makeMariposa(B, A, ctx, cfg);
+      else makeBuilding(B, A, ctx, cfg);
     }
 
     /* ------------------------------------------------- EAST ROW (faces -X) */

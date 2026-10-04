@@ -7,6 +7,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
+    "test": "node --experimental-loader ./test/three-loader.mjs --test ./test/*.test.mjs",
     "multiplayer": "npm install ws --no-save && node server.js",
     "serve": "node server.js"
   },

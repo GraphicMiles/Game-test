@@ -139,7 +139,9 @@ export class MeshBuilder {
   quad(o) {
     const g = new THREE.PlaneGeometry(o.w, o.h || o.d, o.seg, o.seg2);
     const uvA = g.attributes.uv, uv = o.uv || 0.5;
-    for (let i = 0; i < uvA.count; i++) uvA.setXY(i, uvA.getX(i) * o.w * uv, uvA.getY(i) * (o.h || o.d) * uv);
+    const uvU = o.uvScale ? o.uvScale[0] : o.w * uv;
+    const uvV = o.uvScale ? o.uvScale[1] : (o.h || o.d) * uv;
+    for (let i = 0; i < uvA.count; i++) uvA.setXY(i, uvA.getX(i) * uvU, uvA.getY(i) * uvV);
     if (o.flat) g.rotateX(-Math.PI / 2);
     place(g, o, this.tx);
     if (o.tint) paint(g, o.tint);

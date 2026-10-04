@@ -236,8 +236,10 @@ export function porch(B, A, ctx, o) {
 
   // posts
   const py = 0, ph = h - deck;
-  const xs = [];
-  for (let i = 0; i < posts; i++) xs.push(-w / 2 + 0.4 + (i / (posts - 1)) * (w - 0.8));
+  const xs = Array.isArray(o.postXs) ? o.postXs : [];
+  if (!Array.isArray(o.postXs)) {
+    for (let i = 0; i < posts; i++) xs.push(-w / 2 + 0.4 + (i / (posts - 1)) * (w - 0.8));
+  }
   for (const px of xs) {
     // posts stay non-solid so the boardwalk reads as one continuous walkway
     B.box({ w: 0.15, h: ph, d: 0.15, x: px, y: deck + ph / 2, z: cz + depth - 0.28, mat: post, uv: 1.1, tint: 0x7d6440, collide: false });
@@ -364,12 +366,26 @@ export function makeBuilding(B, A, ctx, cfg) {
   } else if (windows === 1) {
     frontHoles.push({ a0: -winW / 2, a1: winW / 2, y0: winY + 0.55, y1: winY + 0.55 + winH * 0.85 });
   }
+  const upperWindowXs = [];
   if (upper) {
+    const nUpper = upper.windows || 3;
+    const span = w - 1.6;
     const uy = upper.y + 0.55;
-    for (let i = 0; i < (upper.windows || 3); i++) {
-      const span = w - 1.6;
-      const cxx = -span / 2 + (i / Math.max(1, (upper.windows || 3) - 1)) * span;
+    for (let i = 0; i < nUpper; i++) {
+      const cxx = -span / 2 + (i / Math.max(1, nUpper - 1)) * span;
+      const ud = upper.door;
+      if (ud && Math.abs(cxx - (ud.x || 0)) < (winW + (ud.w || 1.6)) / 2 + 0.08) continue;
+      upperWindowXs.push(cxx);
       frontHoles.push({ a0: cxx - winW / 2, a1: cxx + winW / 2, y0: uy, y1: uy + winH * 0.9 });
+    }
+    // Optional upper-floor access is a real wall opening; building-specific
+    // trim/door leaves can then be added without punching a collidable hole
+    // into every other upper-storey facade.
+    if (upper.door) {
+      const ud = upper.door;
+      const ux = ud.x || 0, uw = ud.w || 1.6, uh = ud.h || 2.35;
+      const uy0 = ud.y !== undefined ? ud.y : upper.y + 0.08;
+      frontHoles.push({ a0: ux - uw / 2, a1: ux + uw / 2, y0: uy0, y1: uy0 + uh });
     }
   }
   const sideHoles = [];
@@ -450,7 +466,7 @@ export function makeBuilding(B, A, ctx, cfg) {
   if (porchCfg) {
     porch(B, A, ctx, {
       w: porchCfg.w || w, h: porchCfg.h || (wallH - 0.15), depth: porchCfg.depth || 2.6,
-      posts: porchCfg.posts || 4, rail: porchCfg.rail !== false, z0: hd,
+      posts: porchCfg.posts || 4, postXs: porchCfg.postXs, rail: porchCfg.rail !== false, z0: hd,
       stepW: porchCfg.stepW, deck: porchCfg.deck || 0.42,
     });
   }
@@ -582,9 +598,7 @@ export function makeBuilding(B, A, ctx, cfg) {
     B.restore();
   }
   if (upper) {
-    const span = w - 1.6, n = upper.windows || 3;
-    for (let i = 0; i < n; i++) {
-      const cxx = -span / 2 + (i / Math.max(1, n - 1)) * span;
+    for (const cxx of upperWindowXs) {
       windowUnit(B, A, ctx, { x: cxx, z: hd, axis: 'x', w: winW, h: winH * 0.9, y: upper.y + 0.55, tint: 0x8b7350 });
     }
   }
