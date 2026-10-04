@@ -77,9 +77,10 @@ town (~535k triangles in ~530 draw calls) plus its collider set and ramp list.
 
 The player is a capsule resolved axis-by-axis against an AABB spatial hash. Two details matter:
 
-* **Doorway keep-clear.** Street dressing is laid down *before* the buildings, and every building
-  sweeps its own footprint and a 2.9 m corridor from the boardwalk through the front wall. Barrels,
-  hitching rails and porch clutter can never seal a shop.
+* **Doorway keep-clear.** Street dressing is laid down *before* the buildings, and each shop clears
+  its footprint plus an approach corridor for clutter. Facade segments are tagged and preserved
+  during that sweep, so the broad path cannot erase solid wall panels or enlarge the designed
+  openings. Barrels, hitching rails and porch clutter can never seal a shop.
 * **Stairs are ramps.** Flights are drawn as discrete treads but collide as a single smooth slope,
   so you glide up instead of catching a toe on every riser.
 

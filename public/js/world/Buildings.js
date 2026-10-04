@@ -42,7 +42,7 @@ export function wallWithHoles(B, o) {
       const d = axis === 'x' ? t : (e - s);
       const args = { w, h: sy1 - sy0, d, x: cx, y: (sy0 + sy1) / 2, z: cz, mat, uv, tint, collide: false };
       B.box(args);
-      if (solid) B.collideBox(args);
+      if (solid) B.collideBox(args, 'wall');
     }
   }
 }
@@ -593,10 +593,13 @@ export function makeBuilding(B, A, ctx, cfg) {
   if (ctx.furnish) ctx.furnish(interior, B, A, ctx, { w: iw, d: id, h: wallH, floorY, cfg });
 
   /* --------------------------------------------- doorway keep-clear */
-  // carve an open corridor from the boardwalk, through the porch and the
-  // front wall, two metres into the shop.  y0 sits just above the deck so
-  // floors, steps and porch decks survive — only standing obstacles go.
-  B.clearRegion({ x: 0, y: 1.70, z: hd + 1.4, w: 2.9, h: 2.4, d: 6.0 });
+  // Clear props and furnishing from an approach corridor. Shell-wall
+  // colliders are tagged and preserved so this broad sweep cannot widen a
+  // doorway into a walk-through gap in the facade.
+  B.clearRegion(
+    { x: 0, y: 1.70, z: hd + 1.4, w: 2.9, h: 2.4, d: 6.0 },
+    { preserve: (collider) => collider.tag === 'wall' },
+  );
 
   /* ---------------------------------------------------- interior light */
   if (cfg.lit !== false) {

@@ -151,9 +151,10 @@ export class MeshBuilder {
   light(list, cfg) { list.push({ ...cfg, _m: this.tx.clone() }); }
 
   /** Collider from a LOCAL box, transformed by the current transform. */
-  collideBox(o) {
+  collideBox(o, tag = null) {
     if (this.noCollide) return;
-    this.colliders.push(boxBounds(o, this.tx));
+    const bounds = boxBounds(o, this.tx);
+    if (bounds) this.colliders.push(tag ? { ...bounds, tag } : bounds);
   }
 
   /** Register a raw world-space AABB collider (invisible wall, doorway frame, etc). */
@@ -161,18 +162,18 @@ export class MeshBuilder {
     this.colliders.push({ x0: x - w / 2, x1: x + w / 2, z0: z - d / 2, z1: z + d / 2, y0, y1 });
   }
 
-  /** Merge everything into meshes and add to `parent`. */
-/**
- * Drop every already-registered collider that overlaps a local-space box.
- * Used to guarantee a walkable path from the street into every doorway —
- * furniture, barrels, hitching rails and porch clutter never seal a shop.
- */
-  clearRegion(o) {
+  /**
+   * Drop colliders overlapping a local-space box. `preserve` can retain
+   * tagged structural colliders while clearing doorway clutter around them.
+   */
+  clearRegion(o, { preserve = null } = {}) {
     const box = boxBounds(o, this.tx);
-    this.colliders = this.colliders.filter(c =>
-      c.x1 <= box.x0 || c.x0 >= box.x1 ||
-      c.z1 <= box.z0 || c.z0 >= box.z1 ||
-      c.y1 <= box.y0 || c.y0 >= box.y1);
+    this.colliders = this.colliders.filter(c => {
+      if (preserve && preserve(c)) return true;
+      return c.x1 <= box.x0 || c.x0 >= box.x1 ||
+        c.z1 <= box.z0 || c.z0 >= box.z1 ||
+        c.y1 <= box.y0 || c.y0 >= box.y1;
+    });
     return this;
   }
 
@@ -213,6 +214,7 @@ export class MeshBuilder {
     return this;
   }
 
+  /** Merge everything into meshes and add to `parent`. */
   build(parent, { shadows = true, colliders = true } = {}) {
     const meshes = [];
     let tris = 0;
