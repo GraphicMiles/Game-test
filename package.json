@@ -2,14 +2,17 @@
   "name": "sweetwater",
   "version": "1.0.0",
   "private": true,
-  "description": "Sweetwater — a first-person recreation of the Westworld town, playable in the browser.",
+  "description": "Sweetwater \u2014 a first-person recreation of the Westworld town, playable in the browser.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
     "test": "node --experimental-loader ./test/three-loader.mjs --test ./test/*.test.mjs",
     "multiplayer": "npm install ws --no-save && node server.js",
-    "serve": "node server.js"
+    "serve": "node server.js",
+    "test:browser": "node ./test/browser-gameplay.mjs",
+    "test:smoke": "node ./test/smoke.mjs",
+    "test:capture": "node ./test/browser-capture.mjs"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -17,6 +20,17 @@
   "optionalDependencies": {
     "ws": "^8.18.0"
   },
-  "keywords": ["three.js", "webgl", "game", "westworld", "sweetwater", "first-person"],
-  "license": "MIT"
+  "keywords": [
+    "three.js",
+    "webgl",
+    "game",
+    "westworld",
+    "sweetwater",
+    "first-person"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "puppeteer": "^24.0.0",
+    "pngjs": "^7.0.0"
+  }
 }

@@ -105,6 +105,32 @@ missing the server runs single-player and the client never tries to open a socke
 (`npm i ws`) and the Socket.IO-compatible relay comes up on the same port; set `NO_MULTIPLAYER=1`
 to force it off. `/api/info` reports `multiplayer: true|false`.
 
+## Testing
+
+Three layers, all runnable locally:
+
+```bash
+npm test              # 15 unit tests — geometry, Mariposa traversal, LODs, sky clock
+npm run test:browser  # 19 gameplay checks driven through headless Chrome
+npm run test:smoke    # boot audit — module graph, asset 404s, draw calls, console errors
+npm run test:capture  # screenshot set from eight scouted viewpoints
+```
+
+The browser tests boot the **real game** in headless Chrome. Two details matter:
+
+*Headless SwiftShader renders at roughly 0.1 fps*, so anything measured against the wall clock
+is meaningless. The gameplay suite therefore drives `player.update()` with fixed 1/120 s steps
+and asserts on simulation state, reserving wall-clock waits for the parts that genuinely need a
+painted frame (screenshots).
+
+The unit suite stubs `three` through `test/three-loader.mjs`, so world and player modules can be
+imported straight into Node with no browser and no DOM.
+
+Together the suites cover: walking/running/strafing, jump arc and landing, crouch (eye height and
+collision capsule), wall collision with zero penetration, gravity never dropping the player
+through the floor, host and district counts, the day/night cycle, and clean boot with no console
+errors or failed requests.
+
 ## Credits
 
 * Textures — [ambientCG](https://ambientcg.com) (CC0)

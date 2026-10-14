@@ -7,16 +7,18 @@ const TEX_DIR = './assets/textures/';
 
 /** Which ambientCG maps each material set ships with. */
 const SETS = {
-  wood_siding:  { color: 0.78, normal: 1.0, rough: 0.86,  tint: null },
-  wood_painted: { color: 0.72, normal: 0.85, rough: 0.72, tint: null },
-  wood_deck:    { color: 0.80, normal: 0.9,  rough: 0.88, tint: null },
-  ground_dirt:  { color: 0.74, normal: 1.15, rough: 0.97, tint: null },
-  ground_sand:  { color: 0.82, normal: 0.95, rough: 0.98, tint: null },
-  ground_scrub: { color: 0.76, normal: 1.05, rough: 0.96, tint: null },
-  rock_mesa:    { color: 0.68, normal: 1.30, rough: 0.94, tint: null },
-  roof_metal:   { color: 0.62, normal: 1.10, rough: 0.58, metal: 0.35 },
-  brick:        { color: 0.70, normal: 1.15, rough: 0.90, tint: null },
-  plaster:      { color: 0.80, normal: 0.80, rough: 0.85, tint: null },
+  wood_siding:  { color: 0.78, normal: 1.0,  rough: 0.86, tint: null, maps: ['color', 'normal', 'ao'] },
+  wood_painted: { color: 0.72, normal: 0.85, rough: 0.72, tint: null, maps: ['color', 'normal', 'ao'] },
+  // ambientCG ships WoodFloor064 / plaster without an AO map — requesting one
+  // would 404 on every load, so each set declares the maps it actually has.
+  wood_deck:    { color: 0.80, normal: 0.9,  rough: 0.88, tint: null, maps: ['color', 'normal'] },
+  ground_dirt:  { color: 0.74, normal: 1.15, rough: 0.97, tint: null, maps: ['color', 'normal', 'ao'] },
+  ground_sand:  { color: 0.82, normal: 0.95, rough: 0.98, tint: null, maps: ['color', 'normal', 'ao'] },
+  ground_scrub: { color: 0.76, normal: 1.05, rough: 0.96, tint: null, maps: ['color', 'normal', 'ao'] },
+  rock_mesa:    { color: 0.68, normal: 1.30, rough: 0.94, tint: null, maps: ['color', 'normal', 'ao'] },
+  roof_metal:   { color: 0.62, normal: 1.10, rough: 0.58, metal: 0.35, maps: ['color', 'normal', 'ao'] },
+  brick:        { color: 0.70, normal: 1.15, rough: 0.90, tint: null, maps: ['color', 'normal', 'ao'] },
+  plaster:      { color: 0.80, normal: 0.80, rough: 0.85, tint: null, maps: ['color', 'normal'] },
 };
 
 export class Assets {
@@ -59,9 +61,9 @@ export class Assets {
         if (kind === 'texture') {
           const cfg = SETS[key];
           const maps = {};
-          const files = { color: `${key}_color.jpg`, normal: `${key}_normal.jpg`, ao: `${key}_ao.jpg` };
-          await Promise.all(Object.entries(files).map(async ([slot, f]) => {
-            try { maps[slot] = await this._tex(TEX_DIR + f); } catch (e) { /* optional map */ }
+          await Promise.all(cfg.maps.map(async (slot) => {
+            try { maps[slot] = await this._tex(`${TEX_DIR}${key}_${slot}.jpg`); }
+            catch (e) { console.warn('[assets] missing map', key, slot); }
           }));
           this.textures[key] = maps;
           bump(`${key} textures`);

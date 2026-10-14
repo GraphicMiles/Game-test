@@ -263,7 +263,11 @@ export class Sky {
   /** Human readable time + mood name for the HUD. */
   label() {
     const h = this.time;
-    const hh = Math.floor(h), mm = Math.floor((h - hh) * 60);
+    // Round to whole minutes first. Fractional hours stored as h + m/60 are not
+    // exact in floating point (16:20 -> 16.333… -> floor(19.999…) = 19), so
+    // flooring the minutes directly renders 16:20 as "16:19".
+    const total = Math.round(h * 60);
+    const hh = Math.floor(total / 60) % 24, mm = total % 60;
     const mood = h < 5.5 ? 'Night' : h < 7.5 ? 'Dawn' : h < 11 ? 'Morning'
       : h < 14.5 ? 'Midday' : h < 17.5 ? 'Afternoon' : h < 19.3 ? 'Golden Hour'
         : h < 20.6 ? 'Dusk' : 'Night';

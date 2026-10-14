@@ -11,3 +11,6 @@ Thumbs.db
 .idea/
 
 # NOTE: never ignore nested build/ or dist/ dirs — public/vendor/three lives in one.
+
+# Screenshot output from the browser capture script
+/shots/
