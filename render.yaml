@@ -8,13 +8,19 @@ services:
     buildCommand: npm install --omit=dev
     startCommand: node server.js
     healthCheckPath: /healthz
+    autoDeployTrigger: commit     # commit | checksPass | off
+    numInstances: 1
     envVars:
       - key: NODE_VERSION
         value: "20"
       - key: NODE_ENV
         value: production
       # The relay switches on automatically whenever the optional `ws` package
-      # is present, so it is pinned off for the single-player build. Set this
-      # to "0" to bring the multiplayer relay up.
+      # is present, so it is pinned off here to keep the free tier light.
+      # Set this to "0" to bring the multiplayer relay (ws://.../ws) up.
       - key: NO_MULTIPLAYER
         value: "1"
+      # Bind explicitly; Render injects PORT. 0.0.0.0 is required or the
+      # health check cannot reach the container.
+      - key: HOST
+        value: "0.0.0.0"

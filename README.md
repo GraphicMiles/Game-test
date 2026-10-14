@@ -86,17 +86,36 @@ The player is a capsule resolved axis-by-axis against an AABB spatial hash. Two 
 
 ## Deploying to Render
 
-`render.yaml` is a blueprint — Render reads it straight from the repo.
+**One click** — this is all you need:
 
-1. Push this repo to GitHub.
-2. In Render: **New → Blueprint**, pick the repo, and it configures itself.
-3. Or one click:
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/GraphicMiles/Game-test)
 
-   `https://render.com/deploy?repo=https://github.com/GraphicMiles/Game-test`
+That link opens Render's blueprint page with this repo pre-filled. `render.yaml` is read
+straight from `main`, so every setting is already correct — just click **Apply** (sign in or
+create a free account first). You'll get a URL like `https://sweetwater.onrender.com` and the
+build takes a couple of minutes.
 
-Free plan, Node 20, `npm install --omit=dev` then `node server.js`, health check on `/healthz`.
-First load takes a few seconds while the 12 MB of textures and HDRIs download — they're served
-with `Cache-Control: immutable`, so only the first visit pays for it.
+Manual path, if you prefer: **Render dashboard → New → Blueprint →** pick `GraphicMiles/Game-test`.
+
+What the blueprint sets up:
+
+| Setting | Value |
+|---|---|
+| Runtime / plan | Node 20, free |
+| Build | `npm install --omit=dev` |
+| Start | `node server.js` |
+| Health check | `/healthz` |
+| Auto-deploy | on — pushes to `main` redeploy |
+
+Notes on the deployed build:
+
+* **Multiplayer is pinned off** (`NO_MULTIPLAYER=1`) to keep the free tier light. Set it to `0` in
+  `render.yaml` (or the dashboard) to bring the `ws` relay up.
+* The free plan sleeps after ~15 min idle; first request after that takes ~30 s to wake.
+* First load downloads ~12 MB of textures and HDRIs. They're served `Cache-Control: immutable`,
+  so only the first visit pays for it.
+* The sandbox bridge tools (`deploy/render-deploy.mjs`) can create and poll the service for you if
+  you set `RENDER_API_KEY`.
 
 ## Multiplayer
 
